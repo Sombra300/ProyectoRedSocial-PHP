@@ -66,16 +66,6 @@ try {
 		<?php
 			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/header.inc.php');
 		
-			if(!isset($_SESSION['userName'])){
-				//Si no esta registrado mostrara el formulario para ello
-		?>
-
-<!-- Si el usuario no está logueado (no existe su variable de sesión): -->
-		
-		<span>¿Ya tienes cuenta? <a href="/login">Loguéate aquí</a>.</span>
-		<?php
-			}
-		
 			if(isset($_SESSION['userName'])){
 		?>
 
@@ -87,11 +77,10 @@ try {
 				foreach($entries as $entry) {
 					echo '<article class="entrada">';
 					    echo '<h2>'. $entry->userNameAutor .'</h2>';
-					    echo '<span>('. $entry->text .')</span>';
+					    echo '<span>'. $entry->text .'</span>';
                         echo '<span>'. $entry->total_likes .' likes</span><br>';
                         echo '<span>'. $entry->total_dislikes .' dislikes</span><br>';
-					
-					    echo '<span class="botonesCarrito">';
+					    echo '<span>';
 			    		    echo '<a href="/entry.php/'.$entry->id.'" class="entrada">Ver publicacion</a>';		
 					    echo '</span>';
 					echo '</article>';

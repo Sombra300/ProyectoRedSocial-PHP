@@ -19,6 +19,8 @@ if (!isset($_SESSION['userName'])){
     if(isset($_SESSION['comentNew'])){
         try {
             //query para insertar el comentario
+            require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
+            require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
             if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
                 $query =$connesction->prepare ('INSERT INTO comments (text, entry_id, user_id, date) 
                 VALUES (:text, :entry_id, :user_id, :date)');
@@ -65,6 +67,9 @@ if(isset($errors)){
                 }
             }
         ?>
+        <?php
+			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/footer.inc.php');
+		?>
         
     </body>
     </html>

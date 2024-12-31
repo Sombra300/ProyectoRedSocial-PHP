@@ -26,24 +26,28 @@ if (!isset($_SESSION['userName'])){
     //comprueba si se le ha pasado un id
     if(isset($_GET['id'])){
         //guarda el id de la ultima publicacion vista
-        $_SESSION['idLastEntry']=$_GET['id'];}
-        if(isset($_SESSION['idLastEntry'])){
-        try {
-            if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
-                //obtener los datos de la entrada
-                $query =$connesction->prepare ('SELECT e.id AS entry_id, e.user_id, e.text, e.date,
-                        COALESCE(likes_count.total_likes, 0) AS total_likes,
-                        COALESCE(dislikes_count.total_dislikes, 0) AS total_dislikes
-                    FROM 
-                        entries e
-                    LEFT JOIN 
-                        (SELECT entry_id, COUNT(*) AS total_likes FROM likes GROUP BY entry_id) likes_count 
-                        ON e.id = likes_count.entry_id
-                    LEFT JOIN 
-                        (SELECT entry_id, COUNT(*) AS total_dislikes FROM dislikes GROUP BY entry_id) dislikes_count 
-                        ON e.id = dislikes_count.entry_id
-                    WHERE 
-                        e.id = :id;');
+        $_SESSION['idLastEntry']=$_GET['id'];
+    }
+
+    if(isset($_SESSION['idLastEntry'])){
+    try {
+        require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
+        require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
+        if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
+            //obtener los datos de la entrada
+            $query =$connesction->prepare ('SELECT e.id AS entry_id, e.user_id, e.text, e.date,
+                    COALESCE(likes_count.total_likes, 0) AS total_likes,
+                    COALESCE(dislikes_count.total_dislikes, 0) AS total_dislikes
+                FROM 
+                    entries e
+                LEFT JOIN 
+                    (SELECT entry_id, COUNT(*) AS total_likes FROM likes GROUP BY entry_id) likes_count 
+                    ON e.id = likes_count.entry_id
+                LEFT JOIN 
+                    (SELECT entry_id, COUNT(*) AS total_dislikes FROM dislikes GROUP BY entry_id) dislikes_count 
+                    ON e.id = dislikes_count.entry_id
+                WHERE 
+                    e.id = :id;');
             $query->bindParam(':id',$_SESSION['idLastEntry']);
             $query->execute();
             //guardar los datos
@@ -62,16 +66,16 @@ if (!isset($_SESSION['userName'])){
             $queryComents->execute();
             //guardar los datos
             $entryComents = $connection->query($queryComents)->fetchAll(PDO::FETCH_OBJ);
-            } else {
-                throw new Exception('Error en la conexión a la BBDD');
-            }
-            unset($query);
-            unset($connection);
-        } catch (Exception $exception) {
-            $errors['id']='No se esta buscando ninguna publicacion';
-            unset($query);
-            unset($connection);
+        } else {
+            throw new Exception('Error en la conexión a la BBDD');
         }
+        unset($query);
+        unset($connection);
+    } catch (Exception $exception) {
+        $errors['id']='No se esta buscando ninguna publicacion';
+        unset($query);
+        unset($connection);
+    }
     }else{
         $errors['id']='No se esta buscando ninguna publicacion';
     }
@@ -87,6 +91,9 @@ if (!isset($_SESSION['userName'])){
 	</head>
 
 	<body>
+    <?php
+			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/header.inc.php');
+		?>
 		<section class="entradas">
 			<?php
             //si no hay errores mostrar la publicacion

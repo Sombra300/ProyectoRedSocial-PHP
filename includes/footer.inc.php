@@ -10,10 +10,12 @@
 ?>
 <footer>
     <a href="/index.php">Inicio</a>
-    <a href="/author.php">Autor</a>
     <?php
     if(!empty($_SESSION['userName'])){
-        echo '<a href="/user.php">'.$_SESSION['userName'].'</a>';
+        echo '<a href="/account.php">Ajustes del usuario</a>';
     }
     ?>    
+    <a href="/author.php">Autor</a>
+    
+    <span id="logout"><a href="/close.php">Desconectar</a></span>
 </footer>

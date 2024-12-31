@@ -34,9 +34,9 @@ if (isset($_SESSION['userName'])){
                 require_once($_SERVER['DOCUMENT_ROOT'].'/includes/env.inc.php');
                 require_once($_SERVER['DOCUMENT_ROOT'].'/includes/connection.inc.php');
                 if ($connesction=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
-                    $query= $connesction->prepare('SELECT id, user, password FROM users WHERE (user=:user OR email=mail);');
+                    $query= $connesction->prepare('SELECT id, user, password FROM users WHERE (user=:user OR email=:mail);');
                     $query->bindParam(':user',$_POST['user']);
-                    $query->bindParam(':mail',$_POST['email']);
+                    $query->bindParam(':mail',$_POST['user']);
                     $query->execute();
                     if ($query->rowCount()!=1){
                         $errors['login']='Error en el acceso';
@@ -100,6 +100,9 @@ if (isset($_SESSION['userName'])){
                 <?php
             }
         }
+        
+		require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/footer.inc.php');
+		
     ?>
 </body>
 </html>

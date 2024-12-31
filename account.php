@@ -76,6 +76,9 @@ unset($connection);
     <title>Editar cuenta</title>
 </head>
 <body>
+<?php
+			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/header.inc.php');
+		?>
 <div>
         <?php
         //mostrar errores

@@ -7,6 +7,15 @@
  * @version 
  *
  */
+ini_set('session.name','sesionEloy');
+ini_set('session.cookie_httponly',1);
+ini_set('session.cache_expire',10);
+session_start();
+
+if (isset($_SESSION['userName'])){
+    header('location:/index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
