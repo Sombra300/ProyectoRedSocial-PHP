@@ -16,25 +16,48 @@ if (!isset($_SESSION['userName'])){
     header('location:/index.php');
     exit;
 }else{
-    if(!isset($_GET['id'])){
+    foreach($_GET as $key=>$value){
+        $_GET[$key]=trim($value);
+    }
+    if(!isset($_GET['entry_id'])){
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
         try {
             if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
-                $query =$connesction->prepare ('DELETE entries, comments
-                                    FROM entries
-                                    LEFT JOIN comments ON comments.entry_id = entries.id
-                                    WHERE entries.id = :entry_id AND entries.user_id = :user_id');
-                $query->bindParam(':user_id',$_SESSION['id']);
-                $query->bindParam(':entry_id', $_GET['id']);
-                $query->execute();
+
+                $queryDeleteComments = $connection->prepare('DELETE comments 
+                                FROM comments
+                                WHERE entry_id =:entry_id;'
+                            );
+                $queryDeleteComments->bindParam(':entry_id', $_GET['entry_id']);
+                $queryDeleteComments->execute();
+                echo 'elimina comentarios de sus publicaciones<br>';
+
+                // Eliminar likes dados
+                $queryDeleteLike = $connection->prepare('DELETE FROM likes WHERE entry_id = :entry_id');
+                $queryDeleteLike->bindParam(':entry_id', $_GET['entry_id']);
+                $queryDeleteLike->execute();
+                echo 'ya no tiene like<br>';
+
+                // Eliminar dislikes
+                $queryDeleteDislike = $connection->prepare('DELETE FROM dislikes WHERE entry_id = :entry_id');
+                $queryDeleteDislike->bindParam(':entry_id', $_GET['entry_id']);
+                $queryDeleteDislike->execute();
+                echo 'ya no tiene dislike<br>';
+                
+                // Eliminar las publicacion del usuario
+                $queryDeleteEntry = $connection->prepare('DELETE FROM entries 
+                    WHERE id =:entry_id;');
+                $queryDeleteEntry->bindParam(':entry_id', $_GET['entry_id']);
+                $queryDeleteEntry->execute();
+                echo 'elimina la publicacion<br>';
             } else {
                 throw new Exception('Error en la conexión a la BBDD');
             }
             unset($query);
             unset($connection);
         } catch (Exception $exception) {
-            $errors['delete']=$exception;
+            $errors['delete']='No sa borrao';
             unset($query);
             unset($connection);
         }
@@ -42,8 +65,8 @@ if (!isset($_SESSION['userName'])){
 }
 
 if(!isset($errors)){
-    unset($_SESSION['idLastEntry']);
-    header('location:/list.php');
+    echo 'funciona';
+    //header('location:/list.php');
 }else{
 ?>
 <!DOCTYPE html>

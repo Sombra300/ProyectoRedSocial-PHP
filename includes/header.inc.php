@@ -21,21 +21,19 @@
     <?php
         }else{
     //<!-- Si el usuario está logueado (existe su variable de sesión): -->
-        echo '<span id="usuario">'.$_SESSION['userName'].'</span>';
-
-        if(isset($_POST['buscar'])){
-            $_SESSION['buscar']=$_POST['buscar'];
-            header('location:/results.php');
-            exit;
+        echo '<span id="usuario"><a href="/user.php">'.$_SESSION['userName'].'</a></span>';
+        echo '<span><a href="/new.php">¿Quieres publicar algo?</a></span>';
+        
+        
+        ?>
+        <form action="/results.php" method="post">
+        <input type="buscar" name="buscar" id="buscar" default="Buscar...">
+        <input type="submit" value="Buscar">
+        </form>
+        <?php
         }
         ?>
-        <form action="#" method="post">
-        <input type="buscar" name="buscar" id="buscar" value="Buscar...">
-        <input type="submit" value="Accede">
-        </form>
+    
     <!-- Fin usuario logueado -->
-    <?php
-        }
-    ?>
     </div>
 </header>

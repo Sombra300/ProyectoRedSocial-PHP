@@ -23,19 +23,22 @@ if (!isset($_SESSION['userName'])){
         exit;
     }
 
-    //comprueba si se le ha pasado un id
-    if(isset($_GET['id'])){
-        //guarda el id de la ultima publicacion vista
-        $_SESSION['idLastEntry']=$_GET['id'];
+    foreach($_GET as $key=>$value){
+        $_GET[$key]=trim($value);
     }
-
+    
+    //comprueba si se le ha pasado un id
+    if(isset($_GET['entryID'])){
+        //guarda el id de la ultima publicacion vista
+        $_SESSION['idLastEntry']=$_GET['entryID'];
+    }
     if(isset($_SESSION['idLastEntry'])){
     try {
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
         if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
             //obtener los datos de la entrada
-            $query =$connesction->prepare ('SELECT e.id AS entry_id, e.user_id, e.text, e.date,
+            $query =$connection->prepare ('SELECT e.id AS entry_id, e.user_id, e.text, e.date,
                     COALESCE(likes_count.total_likes, 0) AS total_likes,
                     COALESCE(dislikes_count.total_dislikes, 0) AS total_dislikes
                 FROM 
@@ -51,28 +54,35 @@ if (!isset($_SESSION['userName'])){
             $query->bindParam(':id',$_SESSION['idLastEntry']);
             $query->execute();
             //guardar los datos
-            $entryData = $connection->query($query)->fetchAll(PDO::FETCH_OBJ);
+            $entryData = $query->fetchAll(PDO::FETCH_OBJ);
                 
             //obtener los comentarios
-            $queryComents=$connection->prepare ('SELECT c.id AS comment_id, c.user_id AS comment_user_id,
-                            c.text AS comment_text, c.date AS comment_date
-                        FROM 
-                            comments c
-                        WHERE 
-                            c.entry_id = :id
-                        ORDER BY 
-                            c.date ASC;');
+            $queryComents=$connection->prepare ('SELECT c.id AS comment_id, 
+                                                c.user_id AS comment_user_id,
+                                                c.text AS comment_text, 
+                                                c.date AS comment_date,
+                                                u.user AS comment_user_name
+                                            FROM 
+                                                comments c
+                                            INNER JOIN 
+                                                users u
+                                            ON 
+                                                c.user_id = u.id
+                                            WHERE 
+                                                c.entry_id = :id
+                                            ORDER BY 
+                                                c.date ASC;');
             $queryComents->bindParam(':id',$_SESSION['idLastEntry']);
             $queryComents->execute();
             //guardar los datos
-            $entryComents = $connection->query($queryComents)->fetchAll(PDO::FETCH_OBJ);
+            $entryComents = $queryComents->fetchAll(PDO::FETCH_OBJ);
         } else {
             throw new Exception('Error en la conexión a la BBDD');
         }
         unset($query);
         unset($connection);
     } catch (Exception $exception) {
-        $errors['id']='No se esta buscando ninguna publicacion';
+        $errors['id']='No se ha encontrado ninguna publicacion';
         unset($query);
         unset($connection);
     }
@@ -100,8 +110,8 @@ if (!isset($_SESSION['userName'])){
 			if (!isset($errors)) {
 				foreach($entryData as $entry) {
 					echo '<article class="entrada">';
-					    echo '<span>'. $entry->text .'</span>';
-                        echo '<span>'. $entry->total_likes .' likes</span><br>';
+					    echo '<span>'. $entry->text .'</span><br>';
+                        echo '<span>'. $entry->total_likes .' likes</span>';
                         echo '<span>'. $entry->total_dislikes .' dislikes</span><br>';
 					echo '</article>';
 				}
@@ -119,8 +129,8 @@ if (!isset($_SESSION['userName'])){
                 //mostrar comentarios
                 foreach($entryComents as $comment) {
 					echo '<article class="comentario">';
-					    echo '<h2>'. $comment->userNameAutor .'</h2>';
-					    echo '<span>'. $comment->text .'</span>';
+					    echo '<h2>'. $comment->comment_user_name .'</h2>';
+					    echo '<span>'. $comment->comment_text .'</span>';
 					echo '</article>';
 				}
 			} else {

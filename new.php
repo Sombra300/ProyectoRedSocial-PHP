@@ -16,7 +16,7 @@ if (!isset($_SESSION['userName'])){
     header('location:/index.php');
     exit;
 }else{
-    if(isset($_POST)){
+    if(!empty($_POST)){
     require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
     require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
     if(empty($_POST['publicacion'])){
@@ -25,7 +25,7 @@ if (!isset($_SESSION['userName'])){
     if(!isset($errors)){
         try {
             if($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
-                $query =$connesction->prepare ('INSERT INTO entries (user_id, text, date) 
+                $query =$connection->prepare ('INSERT INTO entries (user_id, text, date) 
                                         VALUES (:user_id, :text, NOW())');
                 $query->bindParam(':user_id',$_SESSION['id']);
                 $query->bindParam(':text',$_POST['publicacion']);
@@ -47,7 +47,7 @@ if (!isset($_SESSION['userName'])){
         header('location:/entry.php');
         exit;
     }
-    }else{
+    }
 ?>
 
 <!DOCTYPE html>
@@ -60,14 +60,14 @@ if (!isset($_SESSION['userName'])){
 <body>
 <?php
 			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/header.inc.php');
-		?>
-    <?php
+?>
+<?php
         if(isset($errors)){
             foreach($errors as $error){
                 echo '<div>'.$error.'</div>';
             }
         }
-    ?>
+?>
     
     <form action="#" method="post">
         <label for="publicacion">Introduce lo que quieras publicar</label>
@@ -75,15 +75,14 @@ if (!isset($_SESSION['userName'])){
         <br>
         <input type="submit" value="Publicar">
     </form>
-    <?php
+<?php
 			require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/footer.inc.php');
-		?>
+?>
 </body>
 </html>
 
 <?php
-        
-    }
+
 }
 ?>
 

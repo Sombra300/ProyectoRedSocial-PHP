@@ -29,42 +29,95 @@ if (!isset($_SESSION['userName'])){
             $errors['password']='La contraseña no puede estar en blanco';
         }
 
+        if (empty($_POST['deleteConfirm'])){
+            $errors['password']='No has confirmado que quieres eliminar la cuenta';
+        }
         if (!isset($errors)){
             try{
                 require_once($_SERVER['DOCUMENT_ROOT'].'/includes/env.inc.php');
                 require_once($_SERVER['DOCUMENT_ROOT'].'/includes/connection.inc.php');
-                if ($connesction=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
-                    $query= $connesction->prepare('SELECT user, password FROM users WHERE (user=:user OR email=mail);');
+
+                if ($connection=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
+                    $query= $connection->prepare('SELECT password FROM users WHERE (user=:user OR email=:email);');
                     $query->bindParam(':user',$_POST['user']);
-                    $query->bindParam(':mail',$_POST['email']);
+                    $query->bindParam(':email',$_POST['user']);
                     $query->execute();
+                    $datainDB=$query->fetch();
+
                     if ($query->rowCount()!=1){
-                        $errors['login']='Error en el acceso';
+                        $errors['login']='Error en la verificacion';
                     }else{
-                        if($_POST['deleteConfirm']==true){
-                            $datainDB=$query->fetch();
-                            if(password_verify($_POST['password'],$datainDB['password'])){
+                        if(password_verify($_POST['password'],$datainDB['password'])){
+                            // Eliminar los comentarios creados por el usuario
+                            $queryDeleteUserComments = $connection->prepare('DELETE FROM comments 
+                                WHERE user_id = :user_id;');
+                            $queryDeleteUserComments->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteUserComments->execute();
+                            echo 'elimina comentarios del usuario<br>';
+                            
+                            // Eliminar los comentarios asociados a las publicaciones del usuario
+                            $queryDeleteCommentsOnEntries = $connection->prepare('DELETE comments 
+                                FROM comments
+                                WHERE entry_id IN (
+                                    SELECT id FROM entries WHERE user_id = :user_id);'
+                            );
+                            $queryDeleteCommentsOnEntries->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteCommentsOnEntries->execute();
+                            echo 'elimina comentarios de sus publicaciones<br>';
+                            
+                            // Eliminar las publicaciones del usuario
+                            $queryDeleteEntries = $connection->prepare('DELETE FROM entries 
+                                WHERE user_id = :user_id;');
+                            $queryDeleteEntries->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteEntries->execute();
+                            echo 'elimina sus publicaciones<br>';
+                            
+                            // Eliminar follows del usuario
+                            $queryDeleteFollows = $connection->prepare('DELETE FROM follows WHERE user_id = :user_id');
+                            $queryDeleteFollows->bindParam(':user_id',$_SESSION['id']);
+                            $queryDeleteFollows->execute();
+                            echo 'ya no sigue a nadie<br>';
+                            
+                            // Eliminar follows hacia el usuario
+                            $queryDeleteFollower = $connection->prepare('DELETE FROM likes WHERE user_id = :user_id');
+                            $queryDeleteFollower->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteFollower->execute();
+                            echo 'ya no le sigue nadie<br>';
+
+                            // Eliminar likes dados
+                            $queryDeleteLike = $connection->prepare('DELETE FROM likes WHERE user_id = :user_id');
+                            $queryDeleteLike->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteLike->execute();
+                            echo 'ya no ha dado like<br>';
+
+                            // Eliminar dislikes
+                            $queryDeleteDislike = $connection->prepare('DELETE FROM follows WHERE user_followed = :user_id');
+                            $queryDeleteDislike->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteDislike->execute();
+                            echo 'ya no ha dado dislike<br>';
+
+                            // Eliminar al usuario
+                            $queryDeleteUser = $connection->prepare('DELETE FROM users 
+                                WHERE id = :user_id;');
+                            $queryDeleteUser->bindParam(':user_id', $_SESSION['id']);
+                            $queryDeleteUser->execute();
+                            echo 'no hay usuario<br>';
+
                                 unset($query);
-                                $queryDelete = $connection->prepare(
-                                    'DELETE users, entries, comments 
-                                     FROM users
-                                     LEFT JOIN entries ON users.id = entries.user_id
-                                     LEFT JOIN comments ON entries.id = comments.entry_id
-                                     WHERE (users.user = :user OR users.email = :email);'
-                                );
-                                $queryDelete->bindParam(':user', $_POST['user']);
-                                $queryDelete->bindParam(':email', $_POST['email']);
-                                $queryDelete->execute();
-                                unset($passInDB);
+                                unset($queryDeleteComments);
+                                unset($queryDeleteEntry);
+                                unset($queryDeleteFollower);
+                                unset($queryDeleteFollows);
+                                unset($queryDeleteLike);
+                                unset($queryDeleteDislike);
+                                unset($queryDeleteUser);
                                 unset($connection);
-                                header ('location: /close.php');
+                                session_destroy();
+                                header ('location:/index.php');
                                 exit;
                             }else{
                                 $errors['password']='La contraseña no es correcta';
                             }
-                        }else{
-                            $errors['confirm']='No has confirmado que se elimine la cuenta';
-                        }
                     }
                 } else {
                     throw new Exception('Error en la conexión a la BBDD');
@@ -86,9 +139,6 @@ if (!isset($_SESSION['userName'])){
         <link rel="stylesheet" href="/css/style.css">
     </head>
     <body>
-        <?php
-            require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/header.inc.php');
-        ?>
         <h2>Necesitamos confirmacion para que se pueda eliminar su cuenta</h2>
                 <form action="#" method="post">
                 <label for="user">Usuario o mail</label>
@@ -101,6 +151,7 @@ if (!isset($_SESSION['userName'])){
                     <br>
                     <label>Esta seguro de que quiere eliminar la cuenta?</label>
                     <input type="checkbox" name="deleteConfirm" id="deleteConfirm">
+                    <?=isset($errors['deleteConfirm']) ? '<span class="error">'. $errors['deleteConfirm'] .'</span>' : ""?>
                     <input type="submit" value="Accede">
                 </form>
                 <?php

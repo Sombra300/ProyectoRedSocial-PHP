@@ -16,6 +16,12 @@
     }
     ?>    
     <a href="/author.php">Autor</a>
-    
+    <?php
+        if(isset($_SESSION['userName'])){
+    ?>
     <span id="logout"><a href="/close.php">Desconectar</a></span>
+    <?php
+        }
+    ?>
+    
 </footer>

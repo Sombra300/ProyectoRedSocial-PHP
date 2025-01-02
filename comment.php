@@ -22,13 +22,13 @@ if (!isset($_SESSION['userName'])){
             require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
             require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
             if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
-                $query =$connesction->prepare ('INSERT INTO comments (text, entry_id, user_id, date) 
+                $query =$connection->prepare ('INSERT INTO comments (text, entry_id, user_id, date) 
                 VALUES (:text, :entry_id, :user_id, :date)');
-            $query->bindParam(':text',$_SESSION['comentNew']);
-            $query->bindParam(':entry_id',$_SESSION['idLastEntry']);
-            $query->bindParam(':user_id',$_SESSION['idLastEntry']);
-            $query->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR);
-            $query->execute();
+                $query->bindParam(':text',$_SESSION['comentNew']);
+                $query->bindParam(':entry_id',$_SESSION['idLastEntry']);
+                $query->bindParam(':user_id',$_SESSION['idLastEntry']);
+                $query->bindParam(':date', date('Y-m-d H:i:s'));
+                $query->execute();
 
             if ($query->rowCount() > 0) {
                 header('location:/entry.php');
