@@ -19,6 +19,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
 require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
 try {
 	if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
+		//query pedida completamente a chat gpt
 		$query =$connection->prepare ('SELECT e.id AS entry_id, e.user_id, u.user AS userNameAutor, e.text, e.date,
          COALESCE(likes_count.total_likes, 0) AS total_likes,
         COALESCE(dislikes_count.total_dislikes, 0) AS total_dislikes
@@ -82,7 +83,7 @@ try {
                         echo '<span>'. $entry->total_likes .' likes </span>';
                         echo '<span>'   . $entry->total_dislikes .' dislikes</span><br>';
 					    echo '<span>';
-			    		    echo '<a href="/entry.php/?'.$entryID=$entry->entry_id.'" class="entrada">Ver publicacion</a>';		
+			    		    echo '<a href="/entry.php?entry_id='.$entry->entry_id.'" class="entrada">Ver publicacion</a>';		
 					    echo '</span>';
 					echo '</article>';
 				}

@@ -16,7 +16,7 @@ if (!isset($_SESSION['userName'])){
     header('location:/index.php');
     exit;
 }else{
-    if(!isset($_SESSION['buscar'])){
+    if(!isset($_POST['buscar'])){
         $errors['busqueda']='No estas buscando nada';
     }else{
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
@@ -26,7 +26,7 @@ if (!isset($_SESSION['userName'])){
                 //obtener los datos de la entrada
                 $query =$connection->prepare ('SELECT id AS user_id, user FROM users WHERE user LIKE :buscar');
                 // Preparar el valor de búsqueda con comodines para la consulta LIKE
-                $buscar = '%' . $_SESSION['buscar'] . '%';
+                $buscar = '%' . $_POST['buscar'] . '%';
                 // Vincular el parámetro con el valor de búsqueda
                 $query->bindParam(':buscar', $buscar);
                 $query->execute();
@@ -60,7 +60,7 @@ if (!isset($_SESSION['userName'])){
                 if(isset($results)){
                     foreach($results as $result) {
                         echo '<article class="entrada">';
-                            echo '<a href="/user.php/?'.$result->user_id.'">'. $result->user .'</a>';
+                            echo '<a href="/user.php?user_id='.$result->user_id.'">'. $result->user .'</a>';
                         echo '</article>';
                     }
                 }else{

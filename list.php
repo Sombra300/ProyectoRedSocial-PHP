@@ -63,6 +63,7 @@ if (!isset($_SESSION['userName'])){
 <section class="entradas">
 			<?php
 			if (count($entries)>0) {
+                //listar las publicaciones
 				foreach($entries as $entry) {
 					echo '<article class="entrada">';
 					    echo '<span>'. $entry->text .'</span><br>';
@@ -70,7 +71,7 @@ if (!isset($_SESSION['userName'])){
                         echo '<span>'. $entry->total_dislikes .' dislikes</span><br>';
 					
 					    echo '<span class="botonesCarrito">';
-			    		    echo '<a href="/delete.php/?'.$entry->entry_id.'" class="entrada">Eliminar publicacion</a>';		
+			    		    echo '<a href="/delete.php?entry_id='.$entry->entry_id.'" class="entrada">Eliminar publicacion</a>';		
 					    echo '</span>';
 					echo '</article>';
 				}

@@ -38,6 +38,7 @@ if (!isset($_SESSION['userName'])){
                 require_once($_SERVER['DOCUMENT_ROOT'].'/includes/connection.inc.php');
 
                 if ($connection=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
+                    //query pedida completamente a chat gpt
                     $query= $connection->prepare('SELECT password FROM users WHERE (user=:user OR email=:email);');
                     $query->bindParam(':user',$_POST['user']);
                     $query->bindParam(':email',$_POST['user']);
@@ -49,13 +50,15 @@ if (!isset($_SESSION['userName'])){
                     }else{
                         if(password_verify($_POST['password'],$datainDB['password'])){
                             // Eliminar los comentarios creados por el usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteUserComments = $connection->prepare('DELETE FROM comments 
                                 WHERE user_id = :user_id;');
                             $queryDeleteUserComments->bindParam(':user_id', $_SESSION['id']);
                             $queryDeleteUserComments->execute();
                             echo 'elimina comentarios del usuario<br>';
                             
-                            // Eliminar los comentarios asociados a las publicaciones del usuario
+                            // Eliminar los comentarios de las publicaciones del usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteCommentsOnEntries = $connection->prepare('DELETE comments 
                                 FROM comments
                                 WHERE entry_id IN (
@@ -66,6 +69,7 @@ if (!isset($_SESSION['userName'])){
                             echo 'elimina comentarios de sus publicaciones<br>';
                             
                             // Eliminar las publicaciones del usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteEntries = $connection->prepare('DELETE FROM entries 
                                 WHERE user_id = :user_id;');
                             $queryDeleteEntries->bindParam(':user_id', $_SESSION['id']);
@@ -73,30 +77,35 @@ if (!isset($_SESSION['userName'])){
                             echo 'elimina sus publicaciones<br>';
                             
                             // Eliminar follows del usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteFollows = $connection->prepare('DELETE FROM follows WHERE user_id = :user_id');
                             $queryDeleteFollows->bindParam(':user_id',$_SESSION['id']);
                             $queryDeleteFollows->execute();
                             echo 'ya no sigue a nadie<br>';
                             
                             // Eliminar follows hacia el usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteFollower = $connection->prepare('DELETE FROM likes WHERE user_id = :user_id');
                             $queryDeleteFollower->bindParam(':user_id', $_SESSION['id']);
                             $queryDeleteFollower->execute();
                             echo 'ya no le sigue nadie<br>';
 
                             // Eliminar likes dados
+                            //query pedida completamente a chat gpt
                             $queryDeleteLike = $connection->prepare('DELETE FROM likes WHERE user_id = :user_id');
                             $queryDeleteLike->bindParam(':user_id', $_SESSION['id']);
                             $queryDeleteLike->execute();
                             echo 'ya no ha dado like<br>';
 
-                            // Eliminar dislikes
+                            // Eliminar dislikes dados
+                            //query pedida completamente a chat gpt
                             $queryDeleteDislike = $connection->prepare('DELETE FROM follows WHERE user_followed = :user_id');
                             $queryDeleteDislike->bindParam(':user_id', $_SESSION['id']);
                             $queryDeleteDislike->execute();
                             echo 'ya no ha dado dislike<br>';
 
                             // Eliminar al usuario
+                            //query pedida completamente a chat gpt
                             $queryDeleteUser = $connection->prepare('DELETE FROM users 
                                 WHERE id = :user_id;');
                             $queryDeleteUser->bindParam(':user_id', $_SESSION['id']);

@@ -21,7 +21,7 @@
     <?php
         }else{
     //<!-- Si el usuario está logueado (existe su variable de sesión): -->
-        echo '<span id="usuario"><a href="/user.php">'.$_SESSION['userName'].'</a></span>';
+        echo '<span id="usuario"><a href="/user.php">'.$_SESSION['userName'].'</a></span><br>';
         echo '<span><a href="/new.php">¿Quieres publicar algo?</a></span>';
         
         

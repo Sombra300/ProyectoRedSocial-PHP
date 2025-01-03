@@ -28,9 +28,9 @@ if (!isset($_SESSION['userName'])){
     }
     
     //comprueba si se le ha pasado un id
-    if(isset($_GET['entryID'])){
+    if(isset($_GET['entry_id'])){
         //guarda el id de la ultima publicacion vista
-        $_SESSION['idLastEntry']=$_GET['entryID'];
+        $_SESSION['idLastEntry']=$_GET['entry_id'];
     }
     if(isset($_SESSION['idLastEntry'])){
     try {

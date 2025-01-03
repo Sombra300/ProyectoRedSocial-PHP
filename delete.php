@@ -19,7 +19,7 @@ if (!isset($_SESSION['userName'])){
     foreach($_GET as $key=>$value){
         $_GET[$key]=trim($value);
     }
-    if(!isset($_GET['entry_id'])){
+    if(isset($_GET['entry_id'])){
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
         require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
         try {

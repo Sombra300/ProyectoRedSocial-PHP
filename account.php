@@ -37,6 +37,7 @@ if (!isset($_SESSION['userName'])){
         try{
             //actualiza los datos de la base de datos
             if ($connection=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
+                //query pedida completamente a chat gpt
                 $query= $connection->prepare('UPDATE users SET user = :user, email = :email, password = :password  WHERE id=:id;');
                     $query->bindParam(':id',$_SESSION['id']);
                     $query->bindParam(':user',$_POST['user']);
@@ -55,6 +56,7 @@ if (!isset($_SESSION['userName'])){
     try{
         //consigue los datos actuales del usuario
         if ($connection=getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)){
+            //query pedida completamente a chat gpt
             $query= $connection->prepare('SELECT user, email FROM users WHERE id=:id;');
             $query->bindParam(':id',$_SESSION['id']);
             $query->execute();
