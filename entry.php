@@ -33,10 +33,77 @@ if (!isset($_SESSION['userName'])){
         $_SESSION['idLastEntry']=$_GET['entry_id'];
     }
     if(isset($_SESSION['idLastEntry'])){
-    try {
-        require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
-        require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
-        if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
+        
+        try {
+            require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/env.inc.php');
+            require_once($_SERVER['DOCUMENT_ROOT'] .'/includes/connection.inc.php');
+            if ($connection = getDBConnection(DB_NAME, DB_USERNAME, DB_PASSWORD)) {
+                
+                    if(isset($_GET['like'])){
+                        try {
+                        // Verificar si ya existe el like
+                            $queryCheckLike = $connection->prepare('SELECT * FROM likes WHERE entry_id = :entry_id AND user_id = :user_id');
+                            $queryCheckLike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                            $queryCheckLike->bindParam(':user_id', $_SESSION['id']);
+                            $queryCheckLike->execute();
+
+                            if ($queryCheckLike->rowCount() > 0) {
+                                // Si existe, eliminar el like
+                                $queryDeleteLike = $connection->prepare('DELETE FROM likes WHERE entry_id = :entry_id AND user_id = :user_id');
+                                $queryDeleteLike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryDeleteLike->bindParam(':user_id', $_SESSION['id']);
+                                $queryDeleteLike->execute();
+                            } else {
+                                // Si no existe, agregar el like
+                                $queryInsertLike = $connection->prepare('INSERT INTO likes (entry_id, user_id) VALUES (:entry_id, :user_id)');
+                                $queryInsertLike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryInsertLike->bindParam(':user_id', $_SESSION['id']);
+                                $queryInsertLike->execute();
+
+                                // Eliminar cualquier dislike del usuario para la misma entrada
+                                $queryDeleteDislike = $connection->prepare('DELETE FROM dislikes WHERE entry_id = :entry_id AND user_id = :user_id');
+                                $queryDeleteDislike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryDeleteDislike->bindParam(':user_id', $_SESSION['id']);
+                                $queryDeleteDislike->execute();
+                            }
+                        } catch (Exception $e) {
+                            $errors['like']='Error con el like, intentelo de nuevo mas tarde';
+                        }
+
+                    }
+                    if(isset($_GET['dislike'])){
+                        try {                    
+                            // Verificar si ya existe el dislike
+                            $queryCheckDislike = $connection->prepare('SELECT * FROM dislikes WHERE entry_id = :entry_id AND user_id = :user_id');
+                            $queryCheckDislike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                            $queryCheckDislike->bindParam(':user_id', $_SESSION['id']);
+                            $queryCheckDislike->execute();
+                    
+                            if ($queryCheckDislike->rowCount() > 0) {
+                                // Si existe, eliminar el dislike
+                                $queryDeleteDislike = $connection->prepare('DELETE FROM dislikes WHERE entry_id = :entry_id AND user_id = :user_id');
+                                $queryDeleteDislike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryDeleteDislike->bindParam(':user_id', $_SESSION['id']);
+                                $queryDeleteDislike->execute();
+                            } else {
+                                // Si no existe, agregar el dislike
+                                $queryInsertDislike = $connection->prepare('INSERT INTO dislikes (entry_id, user_id) VALUES (:entry_id, :user_id)');
+                                $queryInsertDislike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryInsertDislike->bindParam(':user_id', $_SESSION['id']);
+                                $queryInsertDislike->execute();
+                    
+                                // Eliminar cualquier like del usuario para la misma entrada
+                                $queryDeleteLike = $connection->prepare('DELETE FROM likes WHERE entry_id = :entry_id AND user_id = :user_id');
+                                $queryDeleteLike->bindParam(':entry_id', $_SESSION['idLastEntry']);
+                                $queryDeleteLike->bindParam(':user_id', $_SESSION['id']);
+                                $queryDeleteLike->execute();
+                            }
+                        } catch (Exception $e) {
+                            $errors['dislike']='Error con el dislike, intentelo de nuevo mas tarde';
+                            
+                        }
+                    }
+
             //obtener los datos de la entrada
             $query =$connection->prepare ('SELECT e.id AS entry_id, e.user_id, e.text, e.date,
                     COALESCE(likes_count.total_likes, 0) AS total_likes,
@@ -81,10 +148,22 @@ if (!isset($_SESSION['userName'])){
         }
         unset($query);
         unset($connection);
+        unset($queryCheckLike);
+        unset($queryDeleteLike);
+        unset($queryInsertLike);
+        unset($queryDeleteDislike);
+        unset($queryInsertDislike);
+        unset($queryCheckDislike);
     } catch (Exception $exception) {
         $errors['id']='No se ha encontrado ninguna publicacion';
         unset($query);
         unset($connection);
+        unset($queryCheckLike);
+        unset($queryDeleteLike);
+        unset($queryInsertLike);
+        unset($queryDeleteDislike);
+        unset($queryInsertDislike);
+        unset($queryCheckDislike);
     }
     }else{
         $errors['id']='No se esta buscando ninguna publicacion';
@@ -111,8 +190,8 @@ if (!isset($_SESSION['userName'])){
 				foreach($entryData as $entry) {
 					echo '<article class="entrada">';
 					    echo '<span>'. $entry->text .'</span><br>';
-                        echo '<span>'. $entry->total_likes .' likes</span>';
-                        echo '<span>'. $entry->total_dislikes .' dislikes</span><br>';
+                        echo '<a href="/entry.php?like=true"><span>'. $entry->total_likes .' likes</span></a>';
+                        echo '<a href="/entry.php?dislike=true"><span>'. $entry->total_dislikes .' dislikes</span><br></a>';
 					echo '</article>';
 				}
 
